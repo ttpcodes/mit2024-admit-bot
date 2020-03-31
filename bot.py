@@ -1,5 +1,5 @@
 from discord import Embed
-from discord.ext.commands import Bot, CommandError, dm_only
+from discord.ext.commands import Bot, CommandError, dm_only, MinimalHelpCommand
 from mysql import connector
 from mysql.connector import Error, errorcode
 
@@ -33,7 +33,7 @@ def generate_embed_template(ctx, title, error=False):
 
 class AdmitBot(Bot):
     def __init__(self):
-        super().__init__(command_prefix='!')
+        super().__init__(command_prefix='!', help_command=None)
 
     async def on_command_error(self, ctx, exception):
         embed = generate_embed_template(ctx, 'Error Running Command', True)
@@ -44,14 +44,23 @@ class AdmitBot(Bot):
 bot = AdmitBot()
 
 
-@bot.command(brief='Verify your Discord account with your MyMIT email address.', help=(
-    '`!verify` is used to verify your Discord account with your MyMIT email address before you are given access to the '
-    'Discord server. To use the command, run `!verify` with your email address to request a verification token that '
-    'will be sent to your email inbox. That email will give you the token needed to complete your account verification '
-    'and give you full access to the server.\n\nIf you are already verified, running `!verify` with your email address '
-    'will give you the role for full access to the server again in case you do not have it. If you have continued '
-    'trouble gaining access to the server, please contact the server admins, who can reach out to the developers.'
-))
+@bot.command(name='help')
+async def help_command(ctx):
+    embed = generate_embed_template(ctx, 'MyMIT Email Address Verification')
+    embed.description = (
+        '```!verify <email address> [token]```\n\n'
+        '`!verify` is used to verify your Discord account with your MyMIT email address before you are given '
+        'access to the Discord server. To use the command, run `!verify` with your email address to request a '
+        'verification token that will be sent to your email inbox. That email will give you the token needed to '
+        'complete your account verification and give you full access to the server.\n\nIf you are already '
+        'verified, running `!verify` with your email address will give you the role for full access to the server '
+        'again in case you do not have it. If you have continued trouble gaining access to the server, please '
+        'contact the server admins, who can reach out to the developers.'
+    )
+    await ctx.send(embed=embed)
+
+
+@bot.command()
 @dm_only()
 async def verify(ctx, email: str, token: Optional[str]):
     try:
