@@ -1,5 +1,6 @@
 from discord import Embed
 from discord.ext.commands import Bot, CommandError, dm_only, MinimalHelpCommand
+from discord.utils import get
 from mysql import connector
 from mysql.connector import Error, errorcode
 
@@ -39,6 +40,29 @@ class AdmitBot(Bot):
         embed = generate_embed_template(ctx, 'Error Running Command', True)
         embed.description = str(exception)
         await ctx.send(embed=embed)
+
+    async def on_member_join(self, member):
+        if not get(member.roles, id=Config['discord']['role']):
+            embed = Embed(colour=32768, title='Welcome to the CPW 2020 Discord Server!')
+            embed.timestamp = datetime.utcnow()
+            embed.set_author(name=str(member), icon_url=str(member.avatar_url))
+            embed.set_footer(text=str(self.user), icon_url=str(self.user.avatar_url))
+            embed.description = ('Hi! I am Swole Tim, defender of the Discord. I use my big arms to hold off people '
+                                 "who shouldn't be here and to hug people who should, and I have lumbered into your "
+                                 'DMs to help with that.\n\nIn order to prove you are an adMIT, and worthy of hugs, '
+                                 'please type `!verify <email address>` below, for whatever email address you used in '
+                                 'MyMIT. I will then email you a verification code to send back to me. It may take a '
+                                 'little bit of time to be delivered (especially if you use Yahoo!, for some reason), '
+                                 'but it should get there.\n\nOnce you receive the email, please copy/paste the '
+                                 'verification command and alphanumeric string back here, in the message field below. '
+                                 'I will then use all my considerable strength to yeet you into the server with the '
+                                 'other adMITs where you belong. If, for some reason, you have continued trouble '
+                                 'gaining access to the server, please contact `sipb-discord@mit.edu` to assist.\n\n'
+                                 'If you are not an adMIT, but you still think you need access to the server, then you '
+                                 'shall not pass me here. However, current students can work with their ASA groups or '
+                                 'residences to negotiate access as representatives, and others can email '
+                                 '`cpw@mitadmissions.org` to plead their case.')
+            await member.send(embed=embed)
 
 
 bot = AdmitBot()
