@@ -108,11 +108,10 @@ async def verify(ctx, email: str, token: Optional[str]):
         cursor.execute("SELECT EXISTS(SELECT * FROM users WHERE email = %s)", (email,))
         email_exists = cursor.fetchone()[0]
         if email_exists:
-            # Need to obtain discriminator from database for specified email
-            cursor.execute("SELECT username, discriminator FROM users WHERE email = %s", (email,))
-            username, discriminator = cursor.fetchone()
-            if discriminator:
-                if int(ctx.message.author.discriminator) == discriminator and ctx.message.author.name == username:
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+            user_id = cursor.fetchone()[0]
+            if user_id:
+                if int(ctx.message.author.id) == user_id:
                     await finish_verification(ctx)
                 else:
                     raise CommandError('Email `{}` is already associated with a Discord account'.format(email))
@@ -137,7 +136,6 @@ async def verify(ctx, email: str, token: Optional[str]):
                 await ctx.send(embed=embed)
                 return
             # Logic here has a token specified, so we attempt verification.
-            # Get discriminator, token, and expiry for specified email
             else:
                 cursor.execute("SELECT token, token_expiry FROM users WHERE email = %s", (email,))
                 stored, expiry = cursor.fetchone()
@@ -146,12 +144,8 @@ async def verify(ctx, email: str, token: Optional[str]):
                 elif expiry < datetime.now():
                     raise CommandError('Token has expired! Run `!verify {}` for a new token.'.format(email))
                 else:
-                    # Verified. For the specified email, set username and discriminator. Token and expiry should just be
-                    # None.
-                    username = ctx.message.author.name
-                    discriminator = ctx.message.author.discriminator
-                    cursor.execute("UPDATE users SET username = %s, discriminator = %s, token = NULL, " +
-                                   "token_expiry = NULL WHERE email = %s", (username, discriminator, email))
+                    cursor.execute("UPDATE users SET id = %s, token = NULL, " +
+                                   "token_expiry = NULL WHERE email = %s", (ctx.message.author.id, email))
                     connection.commit()
                     await finish_verification(ctx)
                     return
