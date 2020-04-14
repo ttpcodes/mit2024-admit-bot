@@ -1,5 +1,5 @@
 from discord import Embed
-from discord.ext.commands import Bot, CommandError, dm_only, MinimalHelpCommand
+from discord.ext.commands import Bot, CommandError, dm_only
 from discord.utils import get
 from mysql import connector
 from mysql.connector import Error, errorcode
