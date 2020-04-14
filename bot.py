@@ -150,7 +150,8 @@ async def verify(ctx, email: str, token: Optional[str]):
                     await finish_verification(ctx)
                     return
         else:
-            raise CommandError('Email `{}` was not recognized as a valid MyMIT email'.format(email))
+            raise CommandError('Email `{}` was not recognized as a valid MyMIT email (make sure your email does not '
+                               'include angle brackets `<>`)'.format(email))
     finally:
         connection.close()
 
