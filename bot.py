@@ -1,15 +1,23 @@
+from bs4 import BeautifulSoup
 from discord import Embed
 from discord.ext.commands import Bot, CommandError, dm_only
 from discord.utils import get
 from mysql import connector
 from mysql.connector import Error, errorcode
+from requests import get
 
+from asyncio import sleep
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from json import load
 from secrets import token_hex
 from smtplib import SMTP_SSL
 from typing import Optional
+
+
+INPUT_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S.000Z'
+OUTPUT_DATE_FORMAT = '%H:%M'
+SLEEP_TIME = 300
 
 
 with open('config.json') as fp:
@@ -35,6 +43,7 @@ def generate_embed_template(ctx, title, error=False):
 class AdmitBot(Bot):
     def __init__(self):
         super().__init__(command_prefix='!', help_command=None)
+        self.loop.create_task(self.post_events())
 
     async def on_command_error(self, ctx, exception):
         embed = generate_embed_template(ctx, 'Error Running Command', True)
@@ -66,6 +75,30 @@ class AdmitBot(Bot):
                                  'residences to negotiate access as representatives, and others can email '
                                  '`cpw@mitadmissions.org` to plead their case.')
             await member.send(embed=embed)
+
+    async def post_events(self):
+        while True:
+            url = 'https://api.pathable.co/v1/meetings?apiKey={}'.format(Config['apiKey'])
+            cal = get(url).json()
+            data = cal['data']
+
+            for item in data:
+                start = datetime.strptime(item['startsAt'], INPUT_DATE_FORMAT)
+                if datetime.now() + timedelta(minutes=5) > start:
+                    embed = Embed(colour=32768, title='Upcoming Event in <=5 Minutes: {}'.format(item['name']))
+                    embed.timestamp = datetime.utcnow()
+                    embed.set_author(name=str(self.user), icon_url=str(self.user.avatar_url))
+                    embed.set_footer(text=str(self.user), icon_url=str(self.user.avatar_url))
+                    if 'description' in item:
+                        embed.description = BeautifulSoup(item['description'], 'html.parser').text
+                    embed.add_field(name='Start Time', value=start.strftime(OUTPUT_DATE_FORMAT))
+                    embed.add_field(name='End Time', value=datetime.strptime(item['_endsAt'], INPUT_DATE_FORMAT)
+                                    .strftime(OUTPUT_DATE_FORMAT))
+                    embed.add_field(name='Link', value='https://cpw2020.mit.edu/meetings/{}'.format(item['_id']))
+                    await self.get_guild(Config['discord']['guild']).get_channel(Config['discord']['channel'])\
+                        .send(embed=embed)
+
+            await sleep(SLEEP_TIME)
 
 
 bot = AdmitBot()
