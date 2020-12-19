@@ -62,7 +62,7 @@ class AdmitBot(Bot):
                                  'please type `!verify <email address>` below, for whatever email address you used in '
                                  'the MIT Application Portal. I will then email you a verification code to send back to me. It may take a '
                                  'little bit of time to be delivered (especially if you use Yahoo!, for some reason), '
-                                 "but it should get there. \n\nOnce you receive the email, please copy/paste the '
+                                 'but it should get there. \n\nOnce you receive the email, please copy/paste the '
                                  'verification command and alphanumeric string back here, in the message field below. '
                                  'I will then use all my considerable strength to yeet you into the server with the '
                                  'other adMITs where you belong. If, for some reason, you have continued trouble '
