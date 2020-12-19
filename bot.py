@@ -66,7 +66,7 @@ class AdmitBot(Bot):
                                  'verification command and alphanumeric string back here, in the message field below. '
                                  'I will then use all my considerable strength to yeet you into the server with the '
                                  'other adMITs where you belong. If, for some reason, you have continued trouble '
-                                 'gaining access to the server, please contact `sipb-discord@mit.edu` to assist.\n\n'
+                                 'gaining access to the server, send a message to #front-door for assistance.\n\n'
                                  'Once you\'re in the server, please check out #rules-n-how-to-discord, get roles in'
                                  '#roles, and don\'t forget to introduce yourself to your fellow adMITs in #introductions!')
             await member.send(embed=embed)
